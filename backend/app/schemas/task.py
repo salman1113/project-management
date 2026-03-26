@@ -1,12 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
-from enum import Enum
-
-class StatusEnum(str, Enum):
-    todo = "todo"
-    in_progress = "in_progress"
-    done = "done"
+from app.models.task import StatusEnum
 
 # Used when CREATING a task
 class TaskCreate(BaseModel):

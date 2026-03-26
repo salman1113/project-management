@@ -1,9 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from enum import Enum
-
-class RoleEnum(str, Enum):
-    admin = "admin"
-    developer = "developer"
+from app.models.user import RoleEnum
 
 # Used when CREATING a user (incoming request)
 class UserCreate(BaseModel):
