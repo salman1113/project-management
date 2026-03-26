@@ -6,5 +6,5 @@ from app.services.project_service import (
 )
 from app.services.task_service import (
     create_task, assign_task,
-    update_task_status, get_tasks
+    update_task_status, get_all_tasks
 )

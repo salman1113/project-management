@@ -9,7 +9,7 @@ from app.services.project_service import (
     update_project,
     delete_project
 )
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 from app.models.user import User
 
 router = APIRouter(prefix="/api/projects", tags=["Projects"])
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/projects", tags=["Projects"])
 def create_new_project(
     project_data: ProjectCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
     """
     Create a new project.

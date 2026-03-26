@@ -45,7 +45,7 @@ def test_user(setup_database):
         name="Test User",
         email="test@user.com",
         password=hashed_pwd,
-        role="developer"
+        role="admin"
     )
     setup_database.add(user)
     setup_database.commit()

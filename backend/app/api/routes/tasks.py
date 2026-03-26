@@ -10,12 +10,12 @@ from app.schemas.task import (
 )
 from app.services.task_service import (
     create_task,
+    get_all_tasks,
     assign_task,
-    update_task_status,
-    get_tasks
+    update_task_status
 )
 from app.models.task import StatusEnum
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 from app.models.user import User
 
 router = APIRouter(prefix="/api/tasks", tags=["Tasks"])
@@ -25,7 +25,7 @@ router = APIRouter(prefix="/api/tasks", tags=["Tasks"])
 def create_new_task(
     task_data: TaskCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
     """
     Create a new task inside a project.
@@ -43,7 +43,7 @@ def assign_task_to_user(
     """
     Assign a task to a user.
     """
-    return assign_task(db, task_id, assign_data.assigned_to)
+    return assign_task(db, task_id, assign_data.assigned_to, current_user)
 
 
 @router.patch("/{task_id}/status", response_model=TaskResponse)
@@ -56,7 +56,7 @@ def update_status(
     """
     Update task status: todo / in_progress / done
     """
-    return update_task_status(db, task_id, status_data.status)
+    return update_task_status(db, task_id, status_data.status, current_user)
 
 
 @router.get("/", status_code=200)
@@ -71,11 +71,6 @@ def list_tasks(
     current_user: User = Depends(get_current_user)
 ):
     """
-    List tasks with optional filters:
-    - ?project_id=1
-    - ?status=todo
-    - ?assigned_to=2
-    - ?project_id=1&status=in_progress&assigned_to=2
-    All combined with pagination.
+    List tasks, with optional filtering and pagination.
     """
-    return get_tasks(db, page, page_size, project_id, status, assigned_to)
+    return get_all_tasks(db, page, page_size, project_id, status, assigned_to, current_user)

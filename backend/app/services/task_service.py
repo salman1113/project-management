@@ -39,7 +39,12 @@ def create_task(db: Session, task_data: TaskCreate, user_id: int):
     return new_task
 
 
-def assign_task(db: Session, task_id: int, assigned_to: int):
+def assign_task(db: Session, task_id: int, assigned_to: int, current_user: User):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can assign tasks"
+        )
     # Check task exists
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
@@ -62,12 +67,18 @@ def assign_task(db: Session, task_id: int, assigned_to: int):
     return task
 
 
-def update_task_status(db: Session, task_id: int, new_status: StatusEnum):
+def update_task_status(db: Session, task_id: int, new_status: StatusEnum, current_user: User):
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
+        )
+        
+    if current_user.role != "admin" and task.assigned_to != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this task's status"
         )
     
     task.status = new_status
@@ -76,25 +87,18 @@ def update_task_status(db: Session, task_id: int, new_status: StatusEnum):
     return task
 
 
-def get_tasks(
-    db: Session,
-    page: int = 1,
-    page_size: int = 10,
-    project_id: Optional[int] = None,
-    status: Optional[StatusEnum] = None,
-    assigned_to: Optional[int] = None
-):
-    # Start with base query
+def get_all_tasks(db: Session, page: int = 1, page_size: int = 10, 
+                  project_id: int = None, status: StatusEnum = None, assigned_to: int = None, current_user: User = None):
     query = db.query(Task)
     
-    # Apply filters only if they are provided
+    if current_user and current_user.role != "admin":
+        query = query.filter(Task.assigned_to == current_user.id)
+        
     if project_id:
         query = query.filter(Task.project_id == project_id)
-    
-    if status:
+    if status is not None:
         query = query.filter(Task.status == status)
-    
-    if assigned_to:
+    if assigned_to and (not current_user or current_user.role == "admin"):
         query = query.filter(Task.assigned_to == assigned_to)
     
     # Pagination
