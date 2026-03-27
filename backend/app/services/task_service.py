@@ -53,6 +53,12 @@ def assign_task(db: Session, task_id: int, assigned_to: int, current_user: User)
             detail="Task not found"
         )
     
+    if task.status == StatusEnum.done:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot modify a completed task"
+        )
+    
     # Check user exists
     user = db.query(User).filter(User.id == assigned_to).first()
     if not user:
@@ -73,6 +79,12 @@ def update_task_status(db: Session, task_id: int, new_status: StatusEnum, curren
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
+        )
+        
+    if task.status == StatusEnum.done:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Completed tasks cannot be modified"
         )
         
     if current_user.role != "admin" and task.assigned_to != current_user.id:

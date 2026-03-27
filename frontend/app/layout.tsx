@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "ProjectManager — Task & Project Tracker",
+  title: "Project Manager — Task & Project Tracker",
   description: "A professional project management tool for teams.",
 };
 

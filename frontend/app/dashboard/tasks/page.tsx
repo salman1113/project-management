@@ -176,16 +176,22 @@ export default function TasksPage() {
                     <p className="text-[11px] text-indigo-400 font-medium uppercase tracking-wide">{getProjectName(task.project_id)}</p>
                   </td>
                   <td className="px-5 py-4">
-                    <select
-                      disabled={user?.role !== "admin" && task.assigned_to !== user?.id}
-                      value={task.status}
-                      onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                      className={`text-[11px] font-bold uppercase tracking-wider rounded-full px-3 py-1.5 cursor-pointer focus:outline-none disabled:cursor-default ${STATUS_STYLE[task.status] || STATUS_STYLE.todo}`}
-                    >
-                      <option value="todo">Todo</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="done">Done</option>
-                    </select>
+                    {task.status === "done" ? (
+                      <span className={`inline-block text-[11px] font-bold uppercase tracking-wider rounded-full px-3 py-1.5 opacity-80 ${STATUS_STYLE.done}`}>
+                        Done
+                      </span>
+                    ) : (
+                      <select
+                        disabled={user?.role !== "admin" && task.assigned_to !== user?.id}
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                        className={`text-[11px] font-bold uppercase tracking-wider rounded-full px-3 py-1.5 cursor-pointer focus:outline-none disabled:cursor-default disabled:opacity-60 ${STATUS_STYLE[task.status] || STATUS_STYLE.todo}`}
+                      >
+                        <option value="todo">Todo</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="done">Done</option>
+                      </select>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     {task.due_date
@@ -193,7 +199,7 @@ export default function TasksPage() {
                       : <span className="text-slate-600">—</span>}
                   </td>
                   <td className="px-5 py-4">
-                    {user?.role === "admin" ? (
+                    {user?.role === "admin" && task.status !== "done" ? (
                       <select value={task.assigned_to || ""} onChange={(e) => handleAssignUser(task.id, e.target.value)}
                         className={`${selectCls} max-w-40`}>
                         <option value="" disabled>Unassigned</option>
@@ -264,7 +270,7 @@ export default function TasksPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Due Date</label>
-                <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
+                <input type="date" min={new Date().toISOString().split('T')[0]} value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
               </div>
               <div className="flex gap-2.5 justify-end pt-1">
                 <button type="button" onClick={() => setShowModal(false)}

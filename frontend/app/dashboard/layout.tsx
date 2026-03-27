@@ -2,10 +2,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 function Sidebar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const [uncompletedCount, setUncompletedCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      api.get(`/api/tasks/?assigned_to=${user.id}`).then((res) => {
+        const count = res.data.items.filter((t: any) => t.status !== "done").length;
+        setUncompletedCount(count);
+      }).catch(console.error);
+    }
+  }, [user, pathname]);
 
   if (!user) return null;
 
@@ -55,7 +67,7 @@ function Sidebar() {
               <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
             </svg>
           </div>
-          <span className="text-sm font-bold text-white tracking-tight">ProjectManager</span>
+          <span className="text-sm font-bold text-white tracking-tight">Project Manager</span>
         </div>
       </div>
 
@@ -68,14 +80,21 @@ function Sidebar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? "bg-indigo-500/15 text-indigo-400"
                   : "text-slate-400 hover:bg-indigo-500/10 hover:text-slate-200"
               }`}
             >
-              {link.icon}
-              {link.label}
+              <span className="flex items-center gap-2.5 flex-1">
+                {link.icon}
+                {link.label}
+              </span>
+              {link.label === "Tasks" && uncompletedCount > 0 && (
+                <span className="bg-red-500/15 border border-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto shadow-sm shadow-red-500/10">
+                  {uncompletedCount} new
+                </span>
+              )}
             </Link>
           );
         })}
